@@ -80,12 +80,19 @@ void UART0_TransmitirByte(uint8_t* byteSaliente)
  *********/
 void UART0_TransmiteCadena(void)
 {
-	while((sTxRxStruc.u8BfrTxIndex1 != sTxRxStruc.u8BfrTxIndex2))
+	if((sTxRxStruc.u8BfrTxIndex1 != (sTxRxStruc.u8BfrTxIndex2)))
 	{
 		UART0_TransmitirByte(& sTxRxStruc.u8BfrTx[sTxRxStruc.u8BfrTxIndex1]);
 		sTxRxStruc.u8BfrTxIndex1++;
 	}
-
+	else
+	{
+		UART0_TransmitirByte(& sTxRxStruc.u8BfrTx[sTxRxStruc.u8BfrTxIndex1]);
+		uBanderasUart0.bitBandera.DetenerMedicion = 1;
+	    uBanderasUart0.bitBandera.SiguienteByte = 0;
+	    sTxRxStruc.u8BfrTxIndex2 = 0;
+	    sTxRxStruc.u8BfrTxIndex1 = 0;
+	}
 }
 
 void UART0_TransmiteTest(uint8_t Dato)
@@ -103,40 +110,39 @@ void UART0_TransmiteTest(uint8_t Dato)
  ********/
 void UART0_LlenarBfrTx(float fPesoSimulado)
 {
-	uint8_t  u8ParEntera, u8Cont = 0;
-//	uint16_t u16Multiplos = 10;
-//	double   tempDecimal;
+	int  u8ParEntera;
+	uint16_t u16Multiplos = 10;
+	double   tempDecimal = fPesoSimulado;
 	uint8_t  u8TempStr[10];
-	uint8_t  TempIndex = 0,TempIndex2 = 0,TempLen =4;
+	uint8_t  TempIndex = 0,TempIndexInt = 0,TempLen;
 
-	u8ParEntera  = (uint8_t)(fPesoSimulado);
-	sprintf(u8TempStr,"%c.",u8ParEntera);
-	//TempLen = strlen(u8TempStr) + 1;
-	/*
-	tempDecimal = u8ParEntera - fPesoSimulado;
+	u8ParEntera  = (int)(fPesoSimulado);
+	sprintf(u8TempStr,"%d.",u8ParEntera);
+	TempIndexInt = strlen(u8TempStr);
+	TempLen = TempIndexInt + 5;
 
-	u8TempStr[TempLen] = '.';
-	while(u8Cont < 4)
-	{
-		u8TempStr[TempLen] = (tempDecimal * u16Multiplos) + '0';
-		tempDecimal -= tempDecimal;
-		TempLen++;
-		u8Cont++;
-		u16Multiplos *= 10;
-	}
-*/
+
 	while(TempIndex <= TempLen)
 	{
-		sTxRxStruc.u8BfrTx[sTxRxStruc.u8BfrTxIndex2] = u8TempStr[TempIndex2];
+		if(TempIndex < TempIndexInt)
+		{
+			sTxRxStruc.u8BfrTx[sTxRxStruc.u8BfrTxIndex2] = u8TempStr[TempIndex];
+		}
+		else
+		{
+			tempDecimal = (tempDecimal - u8ParEntera) * u16Multiplos;
+			u8ParEntera = (int)(tempDecimal);
+			sTxRxStruc.u8BfrTx[sTxRxStruc.u8BfrTxIndex2] = ((char)(u8ParEntera ) + '0');
+		}
 		TempIndex++;
-		TempIndex2++;
 		sTxRxStruc.u8BfrTxIndex2++;
 		if(sTxRxStruc.u8BfrTxIndex2 >= u8TxSize)
 			sTxRxStruc.u8BfrTxIndex2 = 0;
 	}
-	UART0_TransmiteCadena();
-	uBanderasUart0.bitBandera.DatoRecibido = 0;
-
+	sTxRxStruc.u8BfrTx[sTxRxStruc.u8BfrTxIndex2] = '\n';
+	//sTxRxStruc.u8BfrTxIndex2++;
+	//UART0_TransmiteCadena();
+	//uBanderasUart0.bitBandera.DatoRecibido = 0;
 }
 
 void UART0_IRQHandler(void)
@@ -145,9 +151,17 @@ void UART0_IRQHandler(void)
 	if(UART0->S1 & UART_S1_RDRF_MASK)  //Consulta la badera RDRF(Paso 1 pra borrar bandera RDRF)
 	{
 		DatoTemp = UART0->D;
-		sTxRxStruc.u8BfrRx[sTxRxStruc.u8BfrRxIndex1] = DatoTemp;
 		if(DatoTemp == 'P')
+		{
 			uBanderasUart0.bitBandera.DatoRecibido = 1;
+		}
+		else if(DatoTemp == 'C')
+		{
+			uBanderasUart0.bitBandera.SiguienteByte = 1;
+		}
+		else if(DatoTemp == 'S')
+		{
+			uBanderasUart0.bitBandera.DetenerMedicion = 1;
+		}
 	}
-
 }

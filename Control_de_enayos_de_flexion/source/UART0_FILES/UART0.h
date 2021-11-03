@@ -21,8 +21,9 @@ typedef union
 		        Ocupado          :1,//B1
 			    DatoRecibido     :1,//B2
 		        DatoDisponible   :1,//B3
-		        PosicionBufferTx :1,//B4
-		        BitsRestantes    :3;//B5,B6,B7
+		        DetenerMedicion  :1,//B4
+				SiguienteByte    :1,//B5
+		        BitsRestantes    :2;//B6,B7
 
 
 	}bitBandera;

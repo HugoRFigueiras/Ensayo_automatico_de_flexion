@@ -45,7 +45,8 @@
  * @brief   Application entry point.
  */
 
-//float PesoSim = 4.53;
+float PesoSim = 72.2345;
+uint8_t count = 0;
 int main(void)
 {
 
@@ -58,9 +59,25 @@ UART0_Configuracion();
     {
     	if(uBanderasUart0.bitBandera.DatoRecibido == 1)
     	{
-
-    		uBanderasUart0.bitBandera.DatoRecibido = 0;
-    		//UART0_LlenarBfrTx(PesoSim);
+    		if(count <= 0)
+    		{
+    			UART0_LlenarBfrTx(PesoSim);
+    			count++;
+    		}
+    		if(uBanderasUart0.bitBandera.SiguienteByte == 1)
+    		{
+    			count++;
+    			UART0_TransmiteCadena();
+    			uBanderasUart0.bitBandera.SiguienteByte = 0;
+    		}
+    		if((count >= u8TxSize) || (uBanderasUart0.bitBandera.DetenerMedicion == 1) )
+    		{
+    			PesoSim += 0.345;
+    			uBanderasUart0.bitBandera.DetenerMedicion = 0;
+    			uBanderasUart0.bitBandera.DatoRecibido = 0;
+    			uBanderasUart0.bitBandera.DetenerMedicion = 0;
+    			count = 0;
+    		}
     	}
         //UART0_TransmiteTest('i');
 
