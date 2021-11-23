@@ -34,6 +34,7 @@
  */
 
 #include "MKL25Z4.h"
+#include "UART1.h"
 #include "UART0.h"
 //#include "LPTMR.h"
 
@@ -45,41 +46,52 @@
  * @brief   Application entry point.
  */
 
-float PesoSim = 72.2345;
+float PesoSim = 0.0;
 uint8_t count = 0;
+uint8_t Pregunta = '0';
 int main(void)
 {
-
 UART0_Configuracion();
+UART1_Configuracion();
 //UART0_TransmiteTest('L');
 //UART0_TransmiteTest('L');
 
 //Init_LPTMR(5000);
    for(;;)
     {
-    	if(uBanderasUart0.bitBandera.DatoRecibido == 1)
+    	if(uBanderasUart1.bitBandera.DatoRecibido == 1)
     	{
     		if(count <= 0)
     		{
-    			UART0_LlenarBfrTx(PesoSim);
+    			UART1_LlenarBfrTx(PesoSim);
     			count++;
     		}
-    		if(uBanderasUart0.bitBandera.SiguienteByte == 1)
+    		if(uBanderasUart1.bitBandera.SiguienteByte == 1)
     		{
     			count++;
-    			UART0_TransmiteCadena();
-    			uBanderasUart0.bitBandera.SiguienteByte = 0;
+    			UART1_TransmiteCadena();
+    			uBanderasUart1.bitBandera.SiguienteByte = 0;
     		}
-    		if((count >= u8TxSize) || (uBanderasUart0.bitBandera.DetenerMedicion == 1) )
+    		if((count >= u8TxSize) || (uBanderasUart1.bitBandera.DetenerMedicion == 1) )
     		{
     			PesoSim += 0.345;
-    			uBanderasUart0.bitBandera.DetenerMedicion = 0;
-    			uBanderasUart0.bitBandera.DatoRecibido = 0;
-    			uBanderasUart0.bitBandera.DetenerMedicion = 0;
+    			uBanderasUart1.bitBandera.DetenerMedicion = 0;
+    			uBanderasUart1.bitBandera.DatoRecibido = 0;
+    			uBanderasUart1.bitBandera.DetenerMedicion = 0;
     			count = 0;
+    			if(uBanderasUart1.bitBandera.CancelarPrueba == 1)
+    			{
+    				PesoSim = 0;
+    				uBanderasUart1.bitBandera.CancelarPrueba = 0;
+    			}
     		}
     	}
-        //UART0_TransmiteTest('i');
+        if(Pregunta == 'P')
+        {
+        	Pregunta = '0';
+        	UART0_TransmitirByte('P');
+
+        }
 
     }
     //return 0 ;
