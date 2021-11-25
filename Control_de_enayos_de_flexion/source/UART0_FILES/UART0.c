@@ -7,7 +7,7 @@
 
 #include "UART0.h"
 
-uint8_t DatoX;
+uUART0_Banderas uUart0Status;
 
 
 uint8_t u8Indice1Rx;
@@ -65,18 +65,32 @@ void UART0_TransmitirByte(uint8_t byteSaliente)
 
 void UART0_IRQHandler(void)
 {
-	uint8_t DatoTemp = 0;
+	uint8_t TempChar;
 	//Consulta la badera RDRF(Paso 1 pra borrar bandera RDRF)
 	if(UART0->S1 & UART_S1_RDRF_MASK)
 	{
-		//u8BufferRxUart0[u8Indice1Rx] = UART0->D;
-		DatoTemp = UART0->D;
-		u8BufferRxUart0[u8Indice1Rx] = DatoTemp;
-		if((DatoTemp == 'g') || (u8Indice1Rx >= 10))
+		TempChar = UART0->D;
+		if((TempChar != ' ') && uUart0Status.bitU0Bandera.ValorInvalido != 1)
 		{
-			DatoX = 1;
+			u8BufferRxUart0[u8Indice1Rx] = TempChar;
+			u8Indice1Rx++;
+		}
+		if((TempChar == 'k'))
+		{
+			u8BufferRxUart0[u8Indice1Rx - 1] = '\0';
+		}
+		if((TempChar == 'N'))
+		{
+			uUart0Status.bitU0Bandera.ValorInvalido = 1;
 			u8Indice1Rx = 0;
 		}
-		u8Indice1Rx++;
+		if((TempChar == '\r') || (u8Indice1Rx >= 10))
+		{
+			uUart0Status.bitU0Bandera.MedicionExitosa = 1;
+			u8BufferRxUart0[u8Indice1Rx] = '\0';
+			u8Indice1Rx = 0;
+
+		}
+
 	}
 }

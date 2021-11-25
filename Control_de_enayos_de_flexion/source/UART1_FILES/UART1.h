@@ -31,8 +31,6 @@ typedef union
 	}bitBandera;
 }uUART1_Banderas;
 
-
-
 typedef struct
 {
 	//uUART1_Banderas uBanderasUart0;
@@ -45,6 +43,7 @@ typedef struct
 	uint8_t u8BfrRxIndex2; //Posicion del ultimo dato utilizado (extraido)
 }sUart1TxRx;
 
+extern sUart1TxRx sTxRxStrucU1;
 extern uUART1_Banderas uBanderasUart1;
 
 void UART1_Configuracion(void);
@@ -52,5 +51,6 @@ void UART1_TransmitirByte(uint8_t* byteSaliente);
 void UART1_TransmiteCadena(void);
 void UART1_TransmiteTest(uint8_t Dato);
 void UART1_LlenarBfrTx(float fPesoSimulado);
+void UART1_Control(void);
 
 #endif /* UART1_FILES_UART1_H_ */

@@ -65,19 +65,16 @@ void UART1_TransmitirByte(uint8_t* byteSaliente)
  *********/
 void UART1_TransmiteCadena(void)
 {
-	if((sTxRxStrucU1.u8BfrTxIndex1 != (sTxRxStrucU1.u8BfrTxIndex2)))
+	while((sTxRxStrucU1.u8BfrTxIndex1 <= (sTxRxStrucU1.u8BfrTxIndex2)))
 	{
 		UART1_TransmitirByte(& sTxRxStrucU1.u8BfrTx[sTxRxStrucU1.u8BfrTxIndex1]);
 		sTxRxStrucU1.u8BfrTxIndex1++;
 	}
-	else
-	{
-		UART1_TransmitirByte(& sTxRxStrucU1.u8BfrTx[sTxRxStrucU1.u8BfrTxIndex1]);
-		uBanderasUart1.bitBandera.DetenerMedicion = 1;
-	    uBanderasUart1.bitBandera.SiguienteByte = 0;
-	    sTxRxStrucU1.u8BfrTxIndex2 = 0;
-	    sTxRxStrucU1.u8BfrTxIndex1 = 0;
-	}
+    //UART1_TransmitirByte(& sTxRxStrucU1.u8BfrTx[sTxRxStrucU1.u8BfrTxIndex1]);
+	uBanderasUart1.bitBandera.DetenerMedicion = 1;
+	uBanderasUart1.bitBandera.SiguienteByte = 0;
+	sTxRxStrucU1.u8BfrTxIndex2 = 0;
+	sTxRxStrucU1.u8BfrTxIndex1 = 0;
 }
 
 void UART1_TransmiteTest(uint8_t Dato)
@@ -85,7 +82,6 @@ void UART1_TransmiteTest(uint8_t Dato)
 	//Espera a que se libere el pin Tx
 	 while((UART1->S1 & UART_S1_TDRE_MASK) == 0);
 	 UART1->D = Dato;
-
 }
 
 
@@ -128,6 +124,7 @@ void UART1_LlenarBfrTx(float fPesoSimulado)
 	}
 	sTxRxStrucU1.u8BfrTx[sTxRxStrucU1.u8BfrTxIndex2] = '\n';
 }
+
 
 void UART1_IRQHandler(void)
 {
