@@ -13,10 +13,12 @@
 
 typedef enum
 {
-	eU1C_AtencionPeso = 0,
+	eU1C_NuevaPrueba = 0,
+	eUIC_EsperaSolicitud,
 	eU1C_MidiendoPeso,
 	eUIC_IncrementaPresion,
 	eUIC_PesoARaspberry,
+	eUIC_RegistraPeso,
 	eU1C_Reset,
 }eU1C_MedirPeso;
 

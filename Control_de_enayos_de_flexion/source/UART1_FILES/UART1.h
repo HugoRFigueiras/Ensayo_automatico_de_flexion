@@ -11,7 +11,7 @@
 #include "MKL25Z4.h"
 
 #define u8TxSize 20
-#define u8RxSize 50
+#define u8RxSize 500
 
 typedef union
 {
@@ -23,7 +23,7 @@ typedef union
 			    DatoRecibido     :1,//B2
 		        DatoDisponible   :1,//B3
 		        DetenerMedicion  :1,//B4
-				SiguienteByte    :1,//B5
+				IniciarPrueba    :1,//B5
 		        BitsRestantes    :1,//B6
 				CancelarPrueba   :1;//B7
 
@@ -39,8 +39,8 @@ typedef struct
 	uint8_t u8BfrRx[u8RxSize];     //Array que contiene los datos recibidos.
 	uint8_t u8BfrTxIndex1;   //Posicion del ultimo dato transmitido.
 	uint8_t u8BfrTxIndex2;   //Posicion del ultimo dato aun por transmitir.
-	uint8_t u8BfrRxIndex1; //Posicion del ultimo dato recibido
-	uint8_t u8BfrRxIndex2; //Posicion del ultimo dato utilizado (extraido)
+	uint16_t u8BfrRxIndex1; //Posicion del ultimo dato recibido
+	uint16_t u8BfrRxIndex2; //Posicion del ultimo dato utilizado (extraido)
 }sUart1TxRx;
 
 extern sUart1TxRx sTxRxStrucU1;

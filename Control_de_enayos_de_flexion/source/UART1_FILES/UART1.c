@@ -72,7 +72,6 @@ void UART1_TransmiteCadena(void)
 	}
     //UART1_TransmitirByte(& sTxRxStrucU1.u8BfrTx[sTxRxStrucU1.u8BfrTxIndex1]);
 	uBanderasUart1.bitBandera.DetenerMedicion = 1;
-	uBanderasUart1.bitBandera.SiguienteByte = 0;
 	sTxRxStrucU1.u8BfrTxIndex2 = 0;
 	sTxRxStrucU1.u8BfrTxIndex1 = 0;
 }
@@ -133,18 +132,20 @@ void UART1_IRQHandler(void)
 	if(UART1->S1 & UART_S1_RDRF_MASK)
 	{
 		DatoTemp = UART1->D;
-		if(DatoTemp == 'P')
-		{
+		if(DatoTemp == 0x02)
 			uBanderasUart1.bitBandera.DatoRecibido = 1;
-		}
-		else if(DatoTemp == 'C')
-		{
-			uBanderasUart1.bitBandera.SiguienteByte = 1;
-		}
-		else if(DatoTemp == 'S')
+		else if(DatoTemp == 0x01)
+			uBanderasUart1.bitBandera.IniciarPrueba = 1;
+		else if(DatoTemp == 0x03)
 		{
 			uBanderasUart1.bitBandera.DetenerMedicion = 1;
 			uBanderasUart1.bitBandera.CancelarPrueba = 1;
+		}
+		else
+		{
+			sTxRxStrucU1.u8BfrRx[sTxRxStrucU1.u8BfrRxIndex2++] = DatoTemp;
+			if(sTxRxStrucU1.u8BfrRxIndex2 >= (u8RxSize-1))
+				sTxRxStrucU1.u8BfrRxIndex2 = 0;
 		}
 	}
 }

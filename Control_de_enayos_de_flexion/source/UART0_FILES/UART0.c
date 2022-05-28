@@ -84,6 +84,11 @@ void UART0_IRQHandler(void)
 			uUart0Status.bitU0Bandera.ValorInvalido = 1;
 			u8Indice1Rx = 0;
 		}
+//		if((TempChar == 'I'))
+//		{
+//			uUart0Status.bitU0Bandera.ValorInvalido = 1;
+//			u8Indice1Rx = 0;
+//		}
 		if((TempChar == '\r') || (u8Indice1Rx >= 10))
 		{
 			uUart0Status.bitU0Bandera.MedicionExitosa = 1;

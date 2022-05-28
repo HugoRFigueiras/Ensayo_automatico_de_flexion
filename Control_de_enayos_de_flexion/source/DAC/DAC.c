@@ -29,8 +29,10 @@ void Dac0_SetValHex(uint8_t *up8Cont)
         DAC0->DAT->DATH = ((v1 >> 8) & 0x0F);
         v1 += mvDac;
     }
+
     else if(*up8Cont >= 33)
     {
+    	*up8Cont = 0;
     	v1 = 0x0000;
         DAC0->DAT->DATL = (v1 & 0xFF);
         DAC0->DAT->DATH = ((v1 >> 8) & 0x0F);
