@@ -17,6 +17,7 @@
 /*** Function Definitions ***/
 uint8_t timeout(void);
 void LPTMR0_Init(void);
+void LPTMR0_Waitms(uint8_t msCount);
 
 
 

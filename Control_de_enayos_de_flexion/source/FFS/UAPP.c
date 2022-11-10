@@ -11,7 +11,7 @@ FATFS fs;
 FIL fil;
 UINT bw;
 FILINFO flno;
-char file1[NFSIZE] = "Test1.txt";
+char file1[NFSIZE] = "Test1.csv";
 
 FRESULT open_append (
     FIL* fp,            /* [OUT] File object to create */
@@ -34,7 +34,7 @@ FRESULT open_append (
 FRESULT ap_cfName(void)
 {
 	uint8_t i = 0,mult = 1,filNum = 0,u8Index;
-	char temp2[NFSIZE] = ".txt",*u8pIn;
+	char temp2[NFSIZE] = ".csv",*u8pIn;
 
 	if(sizeof(file1) > NFSIZE)
 		return FR_INT_ERR;

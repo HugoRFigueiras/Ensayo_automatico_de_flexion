@@ -132,15 +132,22 @@ void UART1_IRQHandler(void)
 	if(UART1->S1 & UART_S1_RDRF_MASK)
 	{
 		DatoTemp = UART1->D;
-		if(DatoTemp == 0x02)
-			uBanderasUart1.bitBandera.DatoRecibido = 1;
-		else if(DatoTemp == 0x01)
-			uBanderasUart1.bitBandera.IniciarPrueba = 1;
-		else if(DatoTemp == 0x03)
+		if((DatoTemp >= 0x01) && (DatoTemp <= 0x07))
 		{
-			uBanderasUart1.bitBandera.DetenerMedicion = 1;
-			uBanderasUart1.bitBandera.CancelarPrueba = 1;
+			if((DatoTemp >= 0x01) && (DatoTemp <= 0x04) && (DatoTemp != 0x03))
+			{
+				uBanderasUart1.bitBandera.IniciarPrueba = 1;
+				uBanderasUart1.u8Todas |= DatoTemp;
+			}
+			else if(DatoTemp == 0x05)
+				uBanderasUart1.bitBandera.DatoRecibido = 1;
+			else if(DatoTemp == 0x07)
+			{
+				uBanderasUart1.bitBandera.DetenerMedicion = 1;
+				uBanderasUart1.bitBandera.CancelarPrueba = 1;
+			}
 		}
+
 		else
 		{
 			sTxRxStrucU1.u8BfrRx[sTxRxStrucU1.u8BfrRxIndex2++] = DatoTemp;

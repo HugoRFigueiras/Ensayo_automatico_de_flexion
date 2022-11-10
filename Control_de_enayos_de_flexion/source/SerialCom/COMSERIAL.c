@@ -9,12 +9,14 @@
 #include <string.h>
 #include "DAC.h"
 #include "UAPP.h"
+#include "valvula.h"
 
 void COMSERIAL_Inicializa(void)
 {
 	UART0_Configuracion();
 	UART1_Configuracion();
-	Dac0_Init();
+	ctrlPins();
+	//Dac0_Init();
 }
 
 void COMSERIAL_Control(void)
@@ -46,17 +48,18 @@ void COMSERIAL_Control(void)
 			}
 		}
 		break;
+
 	case eUIC_EsperaSolicitud:
 			if(uBanderasUart1.bitBandera.DatoRecibido == 1)
 			{
 				U1C_Status = eU1C_MidiendoPeso;
 				uBanderasUart1.bitBandera.DatoRecibido = 0;
 				UART0_TransmitirByte('P');
-
 			}
 			if((uBanderasUart1.bitBandera.CancelarPrueba == 1)||(uBanderasUart1.bitBandera.DetenerMedicion == 1))
 				U1C_Status = eU1C_Reset;
 		break;
+
 	case eU1C_MidiendoPeso:
 		if(uUart0Status.bitU0Bandera.MedicionExitosa == 1)
 		{
@@ -66,29 +69,16 @@ void COMSERIAL_Control(void)
 				strcpy(sTxRxStrucU1.u8BfrTx,u8BufferRxUart0);
 			sTxRxStrucU1.u8BfrTxIndex2 = strlen(sTxRxStrucU1.u8BfrTx);
 			sTxRxStrucU1.u8BfrTx[sTxRxStrucU1.u8BfrTxIndex2] = '\n';
-			U1C_Status = eUIC_IncrementaPresion;
+			U1C_Status = eUIC_PesoARaspberry;
 		}
 		break;
 
-	case eUIC_IncrementaPresion:
-	    Dac0_SetValHex(&cont);
-	    if(cont >= 33)
-	    {
-	    	UART1_TransmiteTest('I');
-	    	Dac0_SetValHex(&cont);
-	    	cont = 0;
-	    }
-	    else
-	    {
-	    	cont++;
-	    }
-	    U1C_Status = eUIC_PesoARaspberry;
-		break;
 	case eUIC_PesoARaspberry:
 		UART1_TransmiteCadena();
 		U1C_Status = eUIC_RegistraPeso;
 		break;
-case eUIC_RegistraPeso:
+
+    case eUIC_RegistraPeso:
 		if(uBanderasUart1.bitBandera.DatoRecibido == 1)
 		{
 			sizeDat =sTxRxStrucU1.u8BfrRxIndex2 - sTxRxStrucU1.u8BfrRxIndex1;
@@ -101,9 +91,31 @@ case eUIC_RegistraPeso:
 			}
 			sTxRxStrucU1.u8BfrRxIndex2 = 0;
 			uBanderasUart1.bitBandera.DatoRecibido = 0;
-			U1C_Status = eU1C_Reset;
+			U1C_Status = eUIC_IncrementaPresion;
 		}
 		break;
+
+	case eUIC_IncrementaPresion:
+		if(cont < 1)
+		{
+				if(uBanderasUart1.bitBandera.PruebaTipo1 == 1)
+				{
+					valPosX(SET_OFF,SET_ON);
+				}
+				else if(uBanderasUart1.bitBandera.PruebaTipo2 == 1)
+				{
+					valPosX(SET_ON,SET_OFF);
+				}
+				else if(uBanderasUart1.bitBandera.PruebaTipo3 == 1)
+				{
+					valPosX(SET_OFF,SET_OFF);
+				}
+		}
+		cont++;
+	    U1C_Status = eU1C_Reset;
+		break;
+
+
 	case eU1C_Reset:
 		uBanderasUart1.bitBandera.DetenerMedicion = 0;
 		uBanderasUart1.bitBandera.DatoRecibido = 0;
@@ -111,15 +123,25 @@ case eUIC_RegistraPeso:
 		uUart0Status.bitU0Bandera.ValorInvalido = 0;
 		uUart0Status.bitU0Bandera.MedicionExitosa = 0;
 		U1C_Status = eUIC_EsperaSolicitud;
+
 		if((uBanderasUart1.bitBandera.CancelarPrueba == 1)||(uBanderasUart1.bitBandera.DetenerMedicion == 1))
 		{
+			valPosX(SET_OFF,SET_OFF);
+			UART1_TransmiteTest('\n');
+			while(uBanderasUart1.bitBandera.DatoRecibido != 1);
+			//LPTMR0_Waitms(1);
+			sizeDat =sTxRxStrucU1.u8BfrRxIndex2 - sTxRxStrucU1.u8BfrRxIndex1;
+			u8resp = UAPP_writeAppend(sTxRxStrucU1.u8BfrRx, sizeDat);
+			//if(u8resp != 0)
+			sTxRxStrucU1.u8BfrRxIndex2 = 0;
 			//PesoSim = 0;
-			cont = 'S';
-			Dac0_SetValHex(&cont);
+			cont = 0;
 			ap_cfName();
 			U1C_Status = eU1C_NuevaPrueba;
 			uBanderasUart1.bitBandera.CancelarPrueba = 0;
 			uBanderasUart1.bitBandera.DetenerMedicion = 0;
+			uBanderasUart1.bitBandera.DatoRecibido = 0;
+			uBanderasUart1.u8Todas = 0x00;
 		}
 	break;
 	}

@@ -18,13 +18,13 @@ typedef union
 	uint8_t u8Todas;
 	struct
 	{
-		uint8_t Configurando     :1,//B0
-		        Ocupado          :1,//B1
-			    DatoRecibido     :1,//B2
+		uint8_t PruebaTipo1      :1,//B0
+		        PruebaTipo2      :1,//B1
+			    PruebaTipo3      :1,//B2
 		        DatoDisponible   :1,//B3
 		        DetenerMedicion  :1,//B4
 				IniciarPrueba    :1,//B5
-		        BitsRestantes    :1,//B6
+				DatoRecibido     :1,//B6
 				CancelarPrueba   :1;//B7
 
 

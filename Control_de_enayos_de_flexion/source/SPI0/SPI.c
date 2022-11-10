@@ -10,10 +10,10 @@
 void SPIO_csCtrl(uint8_t CsState)
 {
 	if(CsState == 1)
-		GPIOD->PSOR   |= 0x0001;
+		GPIOC->PSOR   |= (1<<4);
 	    //GPIO_PCOR_PTSO(x)
 	if(CsState == 0)
-		GPIOD->PCOR   |= 0x0001;
+		GPIOC->PCOR   |= (1<<4);
 	    //GPIO_PSOR_PTSO(x)
 }
 
@@ -34,14 +34,13 @@ void SPI0_initialize(void)
 	SIM->SCGC4 |= SIM_SCGC4_SPI0_MASK;
 	SIM->SCGC5 |= SIM_SCGC5_PORTD_MASK | SIM_SCGC5_PORTC_MASK ;
 
-
-	PORTD->PCR[0] |= PORT_PCR_MUX(1);// | PORT_PCR_PE_MASK |PORT_PCR_PS_MASK; //SPI CS
-	GPIOD->PDDR    = (1);
-	GPIOD->PSOR    = (1);
+	PORTC->PCR[4] |= PORT_PCR_MUX(1);//SPI CS
+	GPIOC->PDDR    = (1<<4);
+	GPIOC->PSOR    = (1<<4);
 
 	PORTC->PCR[5] |= PORT_PCR_MUX(2);//SPI SCL0
-	PORTD->PCR[2] |= PORT_PCR_MUX(2); //SPI MOSI
-	PORTD->PCR[3] |= PORT_PCR_MUX(2); //SPI MISO
+	PORTC->PCR[6] |= PORT_PCR_MUX(2); //SPI MOSI
+	PORTC->PCR[7] |= PORT_PCR_MUX(2); //SPI MISO
 
 	SPI0->C1 |= SPI_C1_CPOL(0) | SPI_C1_CPHA(0);
 	SPI0->C1 &= ~(SPI_C1_CPHA_MASK);

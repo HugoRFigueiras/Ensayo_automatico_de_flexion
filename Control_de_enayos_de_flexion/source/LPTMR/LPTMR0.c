@@ -27,6 +27,19 @@ void LPTMR0_Init(void)
 	NVIC_EnableIRQ(LPTMR0_IRQn);
 }
 
+void LPTMR0_Waitms(uint8_t msCount)
+{
+	NVIC_DisableIRQ(LPTMR0_IRQn);
+	SIM->SCGC5  |= SIM_SCGC5_LPTMR(1);   //Clock gatinng
+	LPTMR0->CSR &= ~LPTMR_CSR_TMS_MASK;
+	LPTMR0->CSR &= ~LPTMR_CSR_TIE_MASK;
+	LPTMR0->PSR |= LPTMR_PSR_PRESCALE(0) | LPTMR_PSR_PCS(1)| LPTMR_PSR_PBYP(1)  ;
+	LPTMR0->CMR  = LPTMR_CMR_COMPARE(msCount);
+	LPTMR0->CSR |= LPTMR_CSR_TEN(1);
+	while(!(LPTMR0->CSR & LPTMR_CSR_TCF_MASK));
+	LPTMR0->CSR |= LPTMR_CSR_TCF_MASK;
+	LPTMR0->CSR &= ~LPTMR_CSR_TEN_MASK;
+}
 void LPTMR0_IRQHandler(void)
 {
 	//uint8_t temp;
