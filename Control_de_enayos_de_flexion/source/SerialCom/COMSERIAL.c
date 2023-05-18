@@ -10,12 +10,14 @@
 #include "DAC.h"
 #include "UAPP.h"
 #include "valvula.h"
+#include "fsl_debug_console.h"
 
 void COMSERIAL_Inicializa(void)
 {
 	UART0_Configuracion();
 	UART1_Configuracion();
 	ctrlPins();
+	PRINTF("Config complete\n");
 	//Dac0_Init();
 }
 
@@ -32,6 +34,7 @@ void COMSERIAL_Control(void)
 		{
 			if(uBanderasUart1.bitBandera.DatoRecibido == 1)
 			{
+				//PRINTF("ANTES DE DATO\n");
 				buffsize =sTxRxStrucU1.u8BfrRxIndex2 - sTxRxStrucU1.u8BfrRxIndex1;
 				u8resp = UAPP_newFile(sTxRxStrucU1.u8BfrRx,buffsize);
 				if(u8resp != 0)
@@ -39,7 +42,9 @@ void COMSERIAL_Control(void)
 					UART1_TransmiteTest('I');
 					U1C_Status = eUIC_EsperaSolicitud;
 					uBanderasUart1.bitBandera.CancelarPrueba = 1;
+					PRINTF("Error SD\n");
 				}
+				//PRINTF("NUEVA PRUEBA\n");
 				sTxRxStrucU1.u8BfrRxIndex2 = 0;
 				uBanderasUart1.bitBandera.IniciarPrueba = 0;
 				uBanderasUart1.bitBandera.DatoRecibido = 0;
@@ -55,6 +60,7 @@ void COMSERIAL_Control(void)
 				U1C_Status = eU1C_MidiendoPeso;
 				uBanderasUart1.bitBandera.DatoRecibido = 0;
 				UART0_TransmitirByte('P');
+				//PRINTF("ESPERA SOLICITUD \n");
 			}
 			if((uBanderasUart1.bitBandera.CancelarPrueba == 1)||(uBanderasUart1.bitBandera.DetenerMedicion == 1))
 				U1C_Status = eU1C_Reset;
@@ -67,9 +73,10 @@ void COMSERIAL_Control(void)
 				strcpy(sTxRxStrucU1.u8BfrTx,"0.000");
 			else
 				strcpy(sTxRxStrucU1.u8BfrTx,u8BufferRxUart0);
-			sTxRxStrucU1.u8BfrTxIndex2 = strlen(sTxRxStrucU1.u8BfrTx);
-			sTxRxStrucU1.u8BfrTx[sTxRxStrucU1.u8BfrTxIndex2] = '\n';
-			U1C_Status = eUIC_PesoARaspberry;
+			    sTxRxStrucU1.u8BfrTxIndex2 = strlen(sTxRxStrucU1.u8BfrTx);
+			    sTxRxStrucU1.u8BfrTx[sTxRxStrucU1.u8BfrTxIndex2] = '\n';
+			    U1C_Status = eUIC_PesoARaspberry;
+			    //PRINTF("midiendo peso\n");
 		}
 		break;
 
@@ -88,7 +95,9 @@ void COMSERIAL_Control(void)
 				UART1_TransmiteTest('I');
 				U1C_Status = eU1C_Reset;
 				uBanderasUart1.bitBandera.CancelarPrueba = 1;
+				PRINTF("Error SD\n");
 			}
+			//PRINTF("Registra peso \n");
 			sTxRxStrucU1.u8BfrRxIndex2 = 0;
 			uBanderasUart1.bitBandera.DatoRecibido = 0;
 			U1C_Status = eUIC_IncrementaPresion;
@@ -96,11 +105,14 @@ void COMSERIAL_Control(void)
 		break;
 
 	case eUIC_IncrementaPresion:
-		if(cont < 1)
+		if((cont < 1) ||(uBanderasUart1.bitBandera.DetenerMedicion == 1))
 		{
 				if(uBanderasUart1.bitBandera.PruebaTipo1 == 1)
 				{
-					valPosX(SET_OFF,SET_ON);
+					if(uBanderasUart1.bitBandera.DetenerMedicion == 1)
+						valPosX(SET_OFF,SET_ON);
+					else
+						valPosX(SET_ON,SET_OFF);
 				}
 				else if(uBanderasUart1.bitBandera.PruebaTipo2 == 1)
 				{
@@ -108,8 +120,9 @@ void COMSERIAL_Control(void)
 				}
 				else if(uBanderasUart1.bitBandera.PruebaTipo3 == 1)
 				{
-					valPosX(SET_OFF,SET_OFF);
+					valPosX(SET_ON,SET_ON);
 				}
+				//PRINTF("Incrementa Presion\n");
 		}
 		cont++;
 	    U1C_Status = eU1C_Reset;
@@ -124,7 +137,8 @@ void COMSERIAL_Control(void)
 		uUart0Status.bitU0Bandera.MedicionExitosa = 0;
 		U1C_Status = eUIC_EsperaSolicitud;
 
-		if((uBanderasUart1.bitBandera.CancelarPrueba == 1)||(uBanderasUart1.bitBandera.DetenerMedicion == 1))
+		//if((uBanderasUart1.bitBandera.CancelarPrueba == 1)||(uBanderasUart1.bitBandera.DetenerMedicion == 1))
+		if((uBanderasUart1.bitBandera.CancelarPrueba == 1))
 		{
 			valPosX(SET_OFF,SET_OFF);
 			UART1_TransmiteTest('\n');
@@ -142,6 +156,7 @@ void COMSERIAL_Control(void)
 			uBanderasUart1.bitBandera.DetenerMedicion = 0;
 			uBanderasUart1.bitBandera.DatoRecibido = 0;
 			uBanderasUart1.u8Todas = 0x00;
+			//PRINTF("Reset\n");
 		}
 	break;
 	}
